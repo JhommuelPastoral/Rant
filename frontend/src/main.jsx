@@ -12,7 +12,7 @@ AOS.init();
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
-      <Toaster position="bottom-right" reverseOrder={false} toastOptions={{duration: 5000}}/>
+      <Toaster position="bottom-right" reverseOrder={false} />
       <App />
     </Router>
   </StrictMode>,

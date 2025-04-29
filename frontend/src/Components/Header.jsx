@@ -2,11 +2,14 @@ import React, { useState } from 'react'
 import { Bell } from 'lucide-react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { userContext } from '../../context/userContext'
+
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  
+  const {user} = useContext(userContext);
   const handleLogout = async()=>{
     try {
       await axios.post(`${apiUrl}/api/users/logout`);
@@ -33,7 +36,7 @@ export default function Header() {
             className="w-[30px] h-[30px] rounded-full bg-[rgb(155,135,245)] flex items-center justify-center cursor-pointer relative"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <p className="text-white font-semibold text-xs">JP</p>
+            <p className="text-white font-semibold text-xs">{user?.username?.charAt(0)}</p>
 
             {/* Dropdown */}
             {dropdownOpen && (
