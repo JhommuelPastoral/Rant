@@ -13,7 +13,7 @@ export default function Body() {
   const backUrl = import.meta.env.VITE_BACKEND_URL;
   const [message, setMessage] = useState('');
   const [rants, setRants] = useState([]); // State to hold the rants
-  const {user} = useContext(userContext);
+  const {user,loading} = useContext(userContext);
   // Initialize Socket.IO client
   const socket = useRef(null);
 
@@ -56,6 +56,11 @@ export default function Body() {
 
   const handleSubmit = async () => {
     try {
+      if(!user){
+        toast.error("User not loaded, Please Refresh.")
+        return;
+      }
+
       const rant = {
         name: user?.username,
         message,
@@ -84,7 +89,9 @@ export default function Body() {
           {/* Avatar + Textarea */}
           <div className="flex gap-4">
             <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] text-sm flex items-center justify-center text-white font-bold cursor-pointer">
-            {user?.username?.charAt(0)}
+            {!loading &&(
+              <p className="text-white font-semibold text-xs">{user.username.charAt(0)}</p>
+            ) }
             </div>
             <textarea
               ref={textareaRef}

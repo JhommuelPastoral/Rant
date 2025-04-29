@@ -8,6 +8,7 @@ export default function userContextProvider({children}) {
 
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(()=>{
@@ -25,12 +26,16 @@ export default function userContextProvider({children}) {
     .catch((err=>{
       console.error("Token expired or request failed:", err);
       setUser(null);
-    }));
+    }))
+    .finally(()=>{
+      setLoading(false);
+    });
+ 
 
   },[]);
 
   return (
-    <userContext.Provider value ={{user,setUser}}>
+    <userContext.Provider value ={{user,setUser, loading}}>
       {children}
     </userContext.Provider>
 

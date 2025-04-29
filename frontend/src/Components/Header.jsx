@@ -9,7 +9,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const {user} = useContext(userContext);
+  const {user, loading} = useContext(userContext);
   const handleLogout = async()=>{
     try {
       await axios.post(`${apiUrl}/api/users/logout`);
@@ -36,7 +36,9 @@ export default function Header() {
             className="w-[30px] h-[30px] rounded-full bg-[rgb(155,135,245)] flex items-center justify-center cursor-pointer relative"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <p className="text-white font-semibold text-xs">{user?.username?.charAt(0)}</p>
+            {!loading &&(
+              <p className="text-white font-semibold text-xs">{user.username.charAt(0)}</p>
+            ) }
 
             {/* Dropdown */}
             {dropdownOpen && (
