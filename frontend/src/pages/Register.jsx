@@ -9,7 +9,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsename] = useState('');
+  const [username, setUsername] = useState('');
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -18,32 +18,38 @@ export default function Register() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = async (e)=>{
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post(`${apiUrl}/api/users/register`,{email, password, username});
-      if(response.data.error){
-        const errorMessage = response.data.error;
-        if (Array.isArray(errorMessage)) {
-          errorMessage.forEach((err) => toast.error(err));
-        } else {
-          toast.error(errorMessage);
-        }      
-      }
-      else{
-        setEmail('');
-        setPassword('');
-        setUsename('');
-        navigate('/login');
-        toast.success('Registered Successfully!')
-      }
+    const data = { email, password, username };
 
-    } catch (error) {
-      toast.error(error.message);
-    }
-
-  }
+    toast.promise(
+      axios.post(`${apiUrl}/api/users/register`, data),
+      {
+        loading: 'Registering...',
+        success: (response) => {
+          if (response.data.error) {
+            const errorMessage = response.data.error;
+            if (Array.isArray(errorMessage)) {
+              errorMessage.forEach((err) => toast.error(err));
+            } else {
+              toast.error(errorMessage);
+            }
+          } else {
+            setEmail('');
+            setPassword('');
+            setUsername('');
+            navigate('/login');
+            return 'Registered successfully!';
+          }
+        },
+        error: (err) => {
+          const errorMessage = err.response?.data?.error || err.message || 'Registration failed!';
+          return errorMessage;
+        }
+      }
+    );
+  };
 
   return (
     <>
@@ -95,7 +101,7 @@ export default function Register() {
                   name="Username"
                   required
                   value={username}
-                  onChange={(e)=>{setUsename(e.target.value)}}
+                  onChange={(e)=>{setUsername(e.target.value)}}
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                 />
               </div>

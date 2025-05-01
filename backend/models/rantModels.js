@@ -1,24 +1,28 @@
 import mongoose from "mongoose";
 
 const rantSchema = new mongoose.Schema({
-  name:{
+  name: {
     type: String,
-    required: true
+    required: true,
   },
-  message:{
+  message: {
     type: String,
-    required: true
+    required: true,
   },
-  date:{
+  date: {
     type: String,
-    required: true
+    required: true,
   },
-  time:{
+  time: {
     type: String,
-    required: true
+    required: true,
   },
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+}, { timestamps: true });
 
-}, {timestamps: true});
 
 const rant=  mongoose.model('rants', rantSchema);
 export default rant;

@@ -1,68 +1,68 @@
-import { useState,useEffect } from 'react';
-import { Eye, EyeOff,ArrowLeftFromLine  } from 'lucide-react';
+import { useState, useEffect, useContext } from 'react';
+import { Eye, EyeOff, ArrowLeftFromLine } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../Icon.png';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { userContext } from '../../context/userContext';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSending, setSending] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
+  const { setUser } = useContext(userContext);
   const [data, setData] = useState({
-    email:'',
-    password:''
-
+    email: '',
+    password: '',
   });
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if(isSending){
-      return true;
+
+    if (isSending) {
+      return;
     }
 
     setSending(true);
 
     try {
       const { email, password } = data;
-      toast.promise(
-        axios.post(`${apiUrl}/api/users/login`, { email, password }), 
+      await toast.promise(
+        axios.post(`${apiUrl}/api/users/login`, { email, password }),
         {
-          loading: 'Logging in...', 
-          success: 'Login successful!', 
-          error: (err) => err.response?.data?.error || 'Login failed!' 
+          loading: 'Logging in...',
+          success: 'Login successful!',
+          error: (err) => err.response?.data?.error || 'Login failed!',
         }
       ).then((response) => {
+        console.log(response.data);
+        setUser(response.data); 
         setData({
           email: '',
-          password: ''
+          password: '',
         });
-        navigate('/dashboard')
-      }).catch((error) => {
-        console.error(error);
+        navigate('/dashboard');
       });
-  
     } catch (error) {
-      toast.error('An unexpected error occurred');
-      console.error(error);
-    } finally{
-      setSending(false)
+      console.error('Login error:', error);
+    } finally {
+      setSending(false);
     }
   };
-  
+
   return (
     <>
       <header className='bg-white pt-[20px] px-[20px] font-Poppins'>
         <Link to='/'>
-          <button className='flex gap-[10px] cursor-pointer' >
-            <ArrowLeftFromLine/> Back
-          </button>        
+          <button className='flex gap-[10px] cursor-pointer'>
+            <ArrowLeftFromLine /> Back
+          </button>
         </Link>
       </header>
 
@@ -89,7 +89,8 @@ export default function Login() {
                   id="email"
                   name="email"
                   type="email"
-                  onChange={(e)=>{setData({...data, email: e.target.value})}}
+                  value={data.email}
+                  onChange={(e) => setData({ ...data, email: e.target.value })}
                   required
                   autoComplete="email"
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
@@ -113,7 +114,8 @@ export default function Login() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  onChange={(e)=>{setData({...data, password: e.target.value})}}
+                  value={data.password}
+                  onChange={(e) => setData({ ...data, password: e.target.value })}
                   required
                   autoComplete="current-password"
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
@@ -131,7 +133,8 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled={isSending}
+                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-indigo-300"
               >
                 Sign in
               </button>

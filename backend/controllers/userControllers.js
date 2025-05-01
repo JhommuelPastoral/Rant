@@ -2,41 +2,7 @@ import user from "../models/userModels.js";
 import validator from 'validator';
 import jwt from 'jsonwebtoken';
 import { hashPassword, checkPassword, isPasswordMatch } from "../helpers/hash.js";
-
-
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const User = await user.findOne({ email });
-
-    if (!User) {
-      return res.status(404).json({ error: 'No user found' });
-    }
-
-    const match = await isPasswordMatch(password, User.password);
-
-    if (match) {
-      jwt.sign(
-        { email: User.email, password: User.password, username: User.username },
-        process.env.JWT_SECRET,
-        { expiresIn: '1d' },
-        (error, token) => {
-          if (error) throw error;
-          res.cookie('token', token, {
-            httpOnly: true,
-            secure: true, 
-            sameSite: 'None', 
-          }).json(User);
-        }
-      );
-    } else {
-      return res.status(401).json({ message: 'Password does not match' });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
+import rant from "../models/rantModels.js";
 
 export const register = async (req,res)=>{
   
@@ -71,21 +37,92 @@ export const register = async (req,res)=>{
 
   }
 };
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const User = await user.findOne({ email });
+
+    if (!User) {
+      return res.status(404).json({ error: 'No user found' });
+    }
+
+    const likedRants = await rant.find({ likes: User._id }).select('_id');
+
+    const match = await isPasswordMatch(password, User.password);
+
+    if (match) {
+      jwt.sign(
+        { email: User.email, username: User.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '1d' },
+        (error, token) => {
+          if (error) throw error;
+          res.cookie('token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+          }).json({
+            _id: User._id,
+            email: User.email,
+            username: User.username,
+            likedRants: likedRants.map(r => r._id),
+          });
+        }
+      );
+    } else {
+      return res.status(401).json({ message: 'Password does not match' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+// export const getProfile = async (req, res) => {
+//   const { token } = req.cookies;
+//   if (!token) {
+//     return res.json(null);
+//   }
+  
+//   const likedRants = await rant.find({ likes: User._id }).select('_id');
+//   jwt.verify(token, process.env.JWT_SECRET, {}, (error, user) => {
+//     if (error) {
+//       console.log("Error verifying token:", error);
+//       return res.status(401).json(null);
+//     }
+
+//     res.json({id: user_id, email: user.email});
+//   });
+// };
 
 export const getProfile = async (req, res) => {
   const { token } = req.cookies;
+
   if (!token) {
     return res.json(null);
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, {}, (error, user) => {
-    if (error) {
-      console.log("Error verifying token:", error);
-      return res.status(401).json(null);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const foundUser = await user.findOne({ email: decoded.email });
+    if (!foundUser) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
-  });
+    const likedRants = await rant.find({ likes: foundUser._id }).select('_id');
+    res.json({
+      _id: foundUser._id,
+      email: foundUser.email,
+      likedRants: likedRants.map((r) => r._id),
+      username: foundUser.username
+    });
+
+  } catch (error) {
+    console.error('Error verifying token or fetching user:', error.message);
+    return res.status(401).json(null);
+  }
 };
 
 export const logout = async (req,res)=>{
