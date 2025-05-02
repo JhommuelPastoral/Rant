@@ -1,5 +1,5 @@
 import express from 'express';
-import { addLikes, addRant, getRants } from '../controllers/rantController.js';
+import { addLikes, addRant, getRants, addComment } from '../controllers/rantController.js';
 
 const router = express.Router();
 
@@ -11,6 +11,7 @@ const rantRouter = (io) => {
   // GET route to fetch all rants
   router.get('/getRant', (req, res) => getRants(req, res)); 
   router.post('/likes', (req, res) => addLikes(req, res, io)); 
+  router.post('/comment', (req, res) => addComment(req, res, io));
 
   return router;
 };

@@ -47,6 +47,7 @@ export const login = async (req, res) => {
     }
 
     const likedRants = await rant.find({ likes: User._id }).select('_id');
+    // const commentRants = await rant.find({ "comments.userId": User._id }).select('_id');
 
     const match = await isPasswordMatch(password, User.password);
 
@@ -66,6 +67,7 @@ export const login = async (req, res) => {
             email: User.email,
             username: User.username,
             likedRants: likedRants.map(r => r._id),
+            // commentRants: commentRants.map(r => r._id),
           });
         }
       );

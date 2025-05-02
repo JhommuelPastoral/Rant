@@ -15,7 +15,6 @@ export default function UserContextProvider({ children }) {
       .get(`${apiUrl}/api/users/profile`)
       .then(({ data }) => {
         if (data) {
-          console.log(data);
           setUser(data);
           navigate('/dashboard');
         } else {

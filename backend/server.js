@@ -14,6 +14,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Initialize Socket.IO with the server
+// https://rantt.onrender.com
 const io = new Server(server, {
   cors: {
     origin: 'https://rantt.onrender.com',  // Replace with your frontend URL

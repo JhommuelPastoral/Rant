@@ -20,9 +20,15 @@ const rantSchema = new mongoose.Schema({
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  comments: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      comment: { type: String },
+      username: { type: String },
+    }
+  ]
 }, { timestamps: true });
 
-
-const rant=  mongoose.model('rants', rantSchema);
+const rant = mongoose.model('Rant', rantSchema);
 export default rant;
