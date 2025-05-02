@@ -1,17 +1,15 @@
 import express from 'express';
+import authMiddleware from '../auth/authMiddleware.js';
 import { addLikes, addRant, getRants, addComment } from '../controllers/rantController.js';
 
 const router = express.Router();
 
 // Create a function to pass `io` to the routes
 const rantRouter = (io) => {
-  // POST route to add a new rant
-  router.post('/', (req, res) => addRant(req, res, io));
-
-  // GET route to fetch all rants
-  router.get('/getRant', (req, res) => getRants(req, res)); 
-  router.post('/likes', (req, res) => addLikes(req, res, io)); 
-  router.post('/comment', (req, res) => addComment(req, res, io));
+  router.post('/', authMiddleware, (req, res) => addRant(req, res, io));
+  router.get('/getRant', (req, res) => getRants(req, res)); // Optional: make public
+  router.post('/likes', authMiddleware, (req, res) => addLikes(req, res, io));
+  router.post('/comment', authMiddleware, (req, res) => addComment(req, res, io));
 
   return router;
 };
