@@ -9,14 +9,11 @@ const rantSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  date: {
-    type: String,
+  timestamp: {  
+    type: String, 
     required: true,
   },
-  time: {
-    type: String,
-    required: true,
-  },
+
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -28,7 +25,7 @@ const rantSchema = new mongoose.Schema({
       username: { type: String },
     }
   ]
-}, { timestamps: true });
+}, { timestamps: true }); 
 
 const rant = mongoose.model('Rant', rantSchema);
 export default rant;

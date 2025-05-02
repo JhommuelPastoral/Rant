@@ -3,14 +3,14 @@ import mongoose from 'mongoose';
 
 
 export const addRant = async (req, res, io) => {
-  const { name, message, date, time } = req.body;
+  const { name, message, timestamp } = req.body;
 
-  if (!name || !message || !date || !time) {
+  if (!name || !message || !timestamp ) {
     return res.json({ error: 'Invalid Details' });
   }
 
   try {
-    const newRant = await rant.create({ name, message, date, time });
+    const newRant = await rant.create({ name, message, timestamp });
 
     // Emit a 'newRant' event to all connected clients
     io.emit('newRant', newRant); 

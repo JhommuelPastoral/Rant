@@ -95,8 +95,7 @@ export default function Body() {
       const rant = {
         name: user.username,
         message,
-        date: dayjs().format('MMM D, YYYY'),
-        time: dayjs().format('hh:mm:ss A'),
+        timestamp: dayjs().toISOString(), 
       };
 
       await toast.promise(axios.post(`${apiUrl}/api/rants`, rant), {
@@ -201,14 +200,14 @@ export default function Body() {
           success: 'Comment posted!',
           error: (err) => err.response?.data?.error || 'Failed to post comment!',
         }
-      ).then(() => {
-        const el = commentEndRefs.current[rantId];
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
+      )
   
       setComments((prev) => ({ ...prev, [rantId]: '' }));
+      const el = commentEndRefs.current[rantId];
+      if (el) {
+        console.log(el);
+        el.scrollTop = el.scrollHeight;
+      }
     } catch (error) {
       console.error('Error posting comment:', error);
     }
@@ -216,8 +215,8 @@ export default function Body() {
   
 
   return (
-    <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px]">
-      <div className="max-w-[700px] mx-auto flex flex-col gap-6">
+    <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px] relative">
+      <div className="max-w-[700px] mx-auto flex flex-col gap-6 relative">
         {/* Rant Box - Only show if user is logged in */}
         {user && (
           <div className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4">
@@ -251,7 +250,7 @@ export default function Body() {
           <p className="text-center text-gray-500">No rants yet. Be the first to rant!</p>
         ) : (
           rants.slice(0).reverse().map((rant, index) => (
-            <div key={index} className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+            <div key={index} className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4" >
               <div className="flex items-center gap-3">
                 <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] flex items-center justify-center text-white text-sm">
                   {rant.name.charAt(0).toUpperCase()}
@@ -260,7 +259,7 @@ export default function Body() {
                   <p className="font-semibold">
                     {rant.name} <span className="text-gray-400 text-sm">@anonymous</span>
                   </p>
-                  <p className="text-gray-400 text-xs">{dayjs(rant.time).fromNow()}</p>
+                  <p className="text-gray-400 text-xs">{dayjs(rant.timestamp).fromNow()}</p>
                 </div>
               </div>
               <p className="text-gray-700 break-words">{rant.message}</p>
@@ -280,7 +279,7 @@ export default function Body() {
                 {/* Comments Section  */}
                 <div className="pt-3 border-t flex flex-col h-auto">
                   {/* Existing Comments */}
-                  <div className="space-y-2 overflow-y-auto pr-2 max-h-[200px]">
+                  <div className="space-y-2 overflow-y-auto pr-2 max-h-[200px]" ref={(el) => (commentEndRefs.current[rant._id] = el)}>
                     {rant.comments && rant.comments.length > 0 ? (
                       rant.comments.map((cmt, i) => (
                         <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
@@ -330,7 +329,53 @@ export default function Body() {
             </div>
           ))
         )}
+        {/* Side design */}
+        <div className='hidden xl:flex absolute top-0 xl:-right-80 bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl'>
+          <div className="flex flex-col items-center justify-center h-full">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon!</h2>
+            <p className="text-center text-gray-600 mb-6">
+              We are working hard to bring new features. Stay tuned for updates!
+            </p>
+            <div className="flex justify-center items-center">
+              <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                Notify Me
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className='hidden xl:flex absolute top-0 xl:-left-80 bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl'>
+          <div className="flex flex-col items-center justify-center h-full space-y-6">
+            {/* Avatar */}
+            <div className="w-20 h-20 rounded-full bg-purple-300 text-white flex items-center justify-center text-2xl font-bold mb-4">
+              <span> {user?.username.charAt(0).toUpperCase()}</span> {/* This can be replaced with the user's initials */}
+            </div>
+
+            {/* Profile Info */}
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">Coming Soon!</h2>
+              <p className="text-gray-600 text-sm mb-4">
+                We are working hard to bring new features. Stay tuned for updates!
+              </p>
+            </div>
+
+            {/* Button */}
+            <div className="flex justify-center items-center">
+              <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                Notify Me
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Chats */}
+
+
       </div>
+      
+
+
+
     </main>
   );
 }
