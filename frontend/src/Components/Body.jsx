@@ -84,6 +84,11 @@ export default function Body() {
       }
     };
   }, []);
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [allchats]);
   
 
   const handleInput = () => {
@@ -266,6 +271,7 @@ export default function Body() {
 
     }
   }
+  
 
   return (
     <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px]">
@@ -434,7 +440,6 @@ export default function Body() {
           <div className="p-3 h-[300px] flex flex-col">
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1 " >
-              {/* Message from others */}
               {allchats.map((ch, index) =>{
                 if(ch.userId.toString() === user?._id.toString()  ){
                   return(

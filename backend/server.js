@@ -17,14 +17,14 @@ const server = http.createServer(app);
 //https://rantt.onrender.com
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',  // Replace with your frontend URL
+    origin: 'https://rantt.onrender.com',  // Replace with your frontend URL
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
 
 app.use(cors({
-  origin: 'http://localhost:5173',  // Replace with your frontend URL
+  origin: 'https://rantt.onrender.com',  // Replace with your frontend URL
   credentials: true,
 }));
 app.use(express.json());
