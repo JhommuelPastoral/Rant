@@ -61,8 +61,8 @@ export const addComment = async (req,res,io)=>{
 
 export const getRants = async (req, res) => {
   try {
-    const rants = await rant.find();  // Fetch all rants from DB
-    res.status(200).json(rants);      // Return the rants as JSON
+    const rants = await rant.find();  
+    res.status(200).json(rants);      
   } catch (error) {
     res.status(500).json({ error: 'Something went wrong' });
   }

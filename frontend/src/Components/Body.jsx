@@ -22,7 +22,11 @@ export default function Body() {
   const navigate = useNavigate();
   const [comments, setComments] = useState({});
   const commentEndRefs = useRef({});
-
+  const [showChat, setShowChat] = useState(true);
+  const chatRef = useRef(null);
+  const [chat, setchat] = useState('');
+  const [allchats, setAllChats] = useState([]); 
+  const chatEndRef = useRef(null);
   useEffect(() => {
     const fetchRants = async () => {
       try {
@@ -33,8 +37,19 @@ export default function Body() {
         toast.error('Failed to load rants');
       }
     };
+
+    const fetchChats =  async ()=>{
+      try {
+        const response = await axios.get(`${apiUrl}/api/chats/getchats`);
+        setAllChats(response.data);
+      } catch (error) {
+        console.error('Error fetching rants:', error);
+        toast.error('Failed to load rants');
+      }
+    }
   
     fetchRants();
+    fetchChats();
   
     socket.current = io(backUrl, { withCredentials: true });
   
@@ -59,6 +74,9 @@ export default function Body() {
         )
       );
     });
+    socket.current.on('newChat',({userId, username, message}) =>{
+      setAllChats((prev) => [...prev, {userId, username, message}] )
+    });
   
     return () => {
       if (socket.current) {
@@ -82,6 +100,13 @@ export default function Body() {
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
   };
+  const handleChatInput = () =>{
+    const chat = chatRef.current;
+    if(chat){
+      chat.style.height = 'auto';
+      chat.style.height = `${chat.scrollHeight}px`;
+    }
+  }
 
 
   const handleSubmit = async () => {
@@ -192,7 +217,6 @@ export default function Body() {
     }
   
     try {
-      // Send a request to post the comment (implement your backend API call for this)
       await toast.promise(
         axios.post(`${apiUrl}/api/rants/comment`, { userId: user._id, rantId, commentText, username:userName }),
         {
@@ -205,7 +229,6 @@ export default function Body() {
       setComments((prev) => ({ ...prev, [rantId]: '' }));
       const el = commentEndRefs.current[rantId];
       if (el) {
-        console.log(el);
         el.scrollTop = el.scrollHeight;
       }
     } catch (error) {
@@ -213,70 +236,125 @@ export default function Body() {
     }
   };
   
+  const handleMessageSubmit = async()=>{
+    if (!user) {
+      toast.error('Please log in to post a comment');
+      navigate('/login');
+      return;
+    }
+    try {
+      if(!chat){
+        toast.error('Please write a message before submitting');
+      }
+      const time = dayjs().format('hh:mm A');
+      await toast.promise(
+        axios.post(`${apiUrl}/api/chats`, {message: chat, userId: user?._id, username: user?.username, time}),
+        {
+          loading: 'Sending message...',
+          success: 'Message sent!',
+          error: 'Failed to send message'
+        }
+      ).then(()=>{
+        setchat('');
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+      })
+
+
+    } catch (error) {
+      console.error('Error posting message:', error);
+
+    }
+  }
 
   return (
-    <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px] relative">
-      <div className="max-w-[700px] mx-auto flex flex-col gap-6 relative">
-        {/* Rant Box - Only show if user is logged in */}
-        {user && (
-          <div className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4">
-            <div className="flex gap-4">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] text-sm flex items-center justify-center text-white font-bold cursor-pointer">
-                {user.username.charAt(0).toUpperCase()}
+    <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px]">
+      <div className="max-w-[1400px] mx-auto flex justify-center gap-10 ">
+  
+        {/* Left Sticky Side */}
+        <div className="hidden xl:block sticky top-[90px]  h-fit">
+          <div className="bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl">
+            <div className="flex flex-col items-center justify-center h-full space-y-6">
+              <div className="w-20 h-20 rounded-full bg-purple-300 text-white flex items-center justify-center text-2xl font-bold mb-4">
+                <span>{user?.username.charAt(0).toUpperCase()}</span>
               </div>
-              <textarea
-                ref={textareaRef}
-                onInput={handleInput}
-                className="overflow-hidden resize-none outline-none placeholder-gray-500 w-[80%] md:w-[90%] border-b"
-                rows={3}
-                onChange={(e) => setMessage(e.target.value)}
-                value={message}
-                placeholder="What's bothering you today?"
-              ></textarea>
-            </div>
-            <div className="flex justify-end">
-              <button
-                className="bg-[#9b87f5] text-white text-sm px-5 py-2 rounded-lg hover:opacity-90"
-                onClick={handleSubmit}
-              >
-                Rant
-              </button>
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-2">Coming Soon!</h2>
+                <p className="text-gray-600 text-sm mb-4">
+                  We are working hard to bring new features. Stay tuned for updates!
+                </p>
+              </div>
+              <div className="flex justify-center items-center">
+                <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                  Notify Me
+                </button>
+              </div>
             </div>
           </div>
-        )}
-
-        {/* Render Rants */}
-        {rants.length === 0 ? (
-          <p className="text-center text-gray-500">No rants yet. Be the first to rant!</p>
-        ) : (
-          rants.slice(0).reverse().map((rant, index) => (
-            <div key={index} className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4" >
-              <div className="flex items-center gap-3">
-                <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] flex items-center justify-center text-white text-sm">
-                  {rant.name.charAt(0).toUpperCase()}
+        </div>
+  
+        {/* Main Content */}
+        <div className="w-full max-w-[700px] flex flex-col gap-6">
+          {/* Rant Box */}
+          {user && (
+            <div className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+              <div className="flex gap-4">
+                <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] text-sm flex items-center justify-center text-white font-bold cursor-pointer">
+                  {user.username.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-semibold">
-                    {rant.name} <span className="text-gray-400 text-sm">@anonymous</span>
-                  </p>
-                  <p className="text-gray-400 text-xs">{dayjs(rant.timestamp).fromNow()}</p>
-                </div>
+                <textarea
+                  ref={textareaRef}
+                  onInput={handleInput}
+                  className="overflow-hidden resize-none outline-none placeholder-gray-500 w-[80%] md:w-[90%] border-b"
+                  rows={3}
+                  onChange={(e) => setMessage(e.target.value)}
+                  value={message}
+                  placeholder="What's bothering you today?"
+                ></textarea>
               </div>
-              <p className="text-gray-700 break-words">{rant.message}</p>
-              <div className="flex justify-between items-center border-t pt-3 text-gray-400 text-sm">
-                <div className="flex gap-4 justify-center items-center">
-                <Heart 
-                  onClick={() => handleLike(rant._id)} 
-                  fill={user?.likedRants?.includes(rant._id) ? 'red' : 'none'}
-                  stroke={user?.likedRants?.includes(rant._id) ? 'red' : 'gray'}                  
-                  className="cursor-pointer"
-                />
-                <span>{rant.likes.length  }</span>
-                <span>Comments</span>
-                </div>
+              <div className="flex justify-end">
+                <button
+                  className="bg-[#9b87f5] text-white text-sm px-5 py-2 rounded-lg hover:opacity-90"
+                  onClick={handleSubmit}
+                >
+                  Rant
+                </button>
               </div>
-              
-                {/* Comments Section  */}
+            </div>
+          )}
+  
+          {/* Render Rants */}
+          {rants.length === 0 ? (
+            <p className="text-center text-gray-500">No rants yet. Be the first to rant!</p>
+          ) : (
+            rants.slice(0).reverse().map((rant, index) => (
+              <div key={index} className="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-[40px] h-[40px] rounded-full bg-[#9b87f5] flex items-center justify-center text-white text-sm">
+                    {rant.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-semibold">
+                      {rant.name} <span className="text-gray-400 text-sm">@anonymous</span>
+                    </p>
+                    <p className="text-gray-400 text-xs">{dayjs(rant.timestamp).fromNow()}</p>
+                  </div>
+                </div>
+                <p className="text-gray-700 break-words">{rant.message}</p>
+                <div className="flex justify-between items-center border-t pt-3 text-gray-400 text-sm">
+                  <div className="flex gap-4 justify-center items-center">
+                    <Heart
+                      onClick={() => handleLike(rant._id)}
+                      fill={user?.likedRants?.includes(rant._id) ? 'red' : 'none'}
+                      stroke={user?.likedRants?.includes(rant._id) ? 'red' : 'gray'}
+                      className="cursor-pointer"
+                    />
+                    <span>{rant.likes.length}</span>
+                    <span>Comments</span>
+                  </div>
+                </div>
+  
+                {/* Comments Section */}
                 <div className="pt-3 border-t flex flex-col h-auto">
                   {/* Existing Comments */}
                   <div className="space-y-2 overflow-y-auto pr-2 max-h-[200px]" ref={(el) => (commentEndRefs.current[rant._id] = el)}>
@@ -296,11 +374,9 @@ export default function Body() {
                       <p className="text-gray-400 text-sm">No comments yet.</p>
                     )}
                     <div ref={(el) => (commentEndRefs.current[rant._id] = el)} />
-
                   </div>
-
-
-                  {/* Input Box (Design Only) */}
+  
+                  {/* Comment Input */}
                   <div className="flex gap-2 mt-3 items-center">
                     <textarea
                       ref={(el) => (commentRefs.current[rant._id] = el)}
@@ -316,66 +392,118 @@ export default function Body() {
                       className="resize-none overflow-hidden outline-none h-auto placeholder-gray-500 w-full border-b px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
                       rows={1}
                     />
-
                     <button
                       className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm hover:bg-purple-600 transition"
-                      onClick={()=>{handleCommentSubmit(rant._id, user?.username)}}
+                      onClick={() => {
+                        handleCommentSubmit(rant._id, user?.username);
+                      }}
                     >
                       Send
                     </button>
                   </div>
                 </div>
-              
-            </div>
-          ))
-        )}
-        {/* Side design */}
-        <div className='hidden xl:flex absolute top-0 xl:-right-80 bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl'>
-          <div className="flex flex-col items-center justify-center h-full">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon!</h2>
-            <p className="text-center text-gray-600 mb-6">
-              We are working hard to bring new features. Stay tuned for updates!
-            </p>
-            <div className="flex justify-center items-center">
-              <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                Notify Me
-              </button>
-            </div>
-          </div>
+              </div>
+            ))
+          )}
         </div>
-
-        <div className='hidden xl:flex absolute top-0 xl:-left-80 bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl'>
-          <div className="flex flex-col items-center justify-center h-full space-y-6">
-            {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-purple-300 text-white flex items-center justify-center text-2xl font-bold mb-4">
-              <span> {user?.username.charAt(0).toUpperCase()}</span> {/* This can be replaced with the user's initials */}
-            </div>
-
-            {/* Profile Info */}
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">Coming Soon!</h2>
-              <p className="text-gray-600 text-sm mb-4">
+  
+        {/* Right Sticky Side */}
+        <div className="hidden xl:block sticky top-[90px] h-fit">
+          <div className="bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl">
+            <div className="flex flex-col items-center justify-center h-full">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon!</h2>
+              <p className="text-center text-gray-600 mb-6">
                 We are working hard to bring new features. Stay tuned for updates!
               </p>
+              <div className="flex justify-center items-center">
+                <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
+                  Notify Me
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Chats */}
+        {showChat && (
+        <div className="fixed bottom-4 right-4 z-50 w-[300px] bg-white shadow-lg rounded-xl overflow-hidden text-sm">
+          <div className="bg-purple-500 text-white px-4 py-2 font-semibold flex justify-between items-center cursor-pointer">
+            <span>Global Chats</span>
+            <button className="text-white hover:text-gray-200" onClick={() => setShowChat(false)}>×</button>
+          </div>
+
+          <div className="p-3 h-[300px] flex flex-col">
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 " >
+              {/* Message from others */}
+              {allchats.map((ch, index) =>{
+                if(ch.userId.toString() === user?._id.toString()  ){
+                  return(
+                    <div className="flex items-end justify-end gap-2" key ={index}>
+                      <div>
+                        <div className="bg-purple-100 p-2 rounded-lg max-w-[200px]">
+                          {ch.message}
+                        </div>
+                        <div className="text-xs text-gray-400 text-right mt-1">{ch.time}</div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-semibold">{ch.username.charAt(0).toUpperCase()}</div>
+                    </div>
+                  )
+                }
+
+                else{
+                  return(
+                    <div className="flex items-start gap-2" key ={index}>
+                      <div className="w-8 h-8 rounded-full bg-purple-300 flex items-center justify-center text-white font-semibold">{ch.username.charAt(0).toUpperCase()}</div>
+                      <div>
+                        <div className="bg-gray-200 p-2 rounded-lg max-w-[200px]">
+                          {ch.message}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">{ch.time}</div>
+                      </div>
+                    </div>
+                  )
+                }
+              })}
+
+
+              <div ref={chatEndRef} />
             </div>
 
-            {/* Button */}
-            <div className="flex justify-center items-center">
-              <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                Notify Me
+            {/* Input */}
+            <div className="flex items-center gap-2 mt-3 shadow-2xl ">
+              <textarea
+                ref={chatRef}
+                onInput={handleChatInput}
+                onChange={(e)=>{setchat(e.target.value)}}
+                value={chat}
+                placeholder="Type a message..."
+                className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none overflow-y-auto placeholder-gray-500 transition-all max-h-[120px]"
+                rows={1}
+              />
+              <button onClick={handleMessageSubmit} className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm hover:bg-purple-600 transition">
+                Send
               </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Chats */}
+        
+        {!showChat && (
+          <button
+            onClick={() => setShowChat(true)}
+            className="fixed bottom-4 right-4 z-50 cursor-pointer bg-purple-500 text-white w-12 h-12 rounded-full shadow-lg hover:bg-purple-600 transition flex items-center justify-center group"
+          >
+            💬
+            <span className="absolute top-2 -left-25 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none">
+              Global Chats
+            </span>
+          </button>
+        )}
 
-
+    
       </div>
-      
-
-
-
     </main>
   );
+  
 }

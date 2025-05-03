@@ -41,7 +41,6 @@ export default function Login() {
           error: (err) => err.response?.data?.error || 'Login failed!',
         }
       ).then((response) => {
-        console.log(response.data);
         setUser(response.data); 
         setData({
           email: '',

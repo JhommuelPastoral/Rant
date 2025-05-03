@@ -6,16 +6,16 @@ const router = express.Router();
 
 // Create a function to pass `io` to the routes
 const rantRouter = (io) => {
-  router.post('/', authMiddleware, (req, res) => addRant(req, res, io));
-  router.get('/getRant', (req, res) => getRants(req, res)); // Optional: make public
-  router.post('/likes', authMiddleware, (req, res) => addLikes(req, res, io));
-  router.post('/comment', authMiddleware, (req, res) => addComment(req, res, io));
-
-
-  // router.post('/', (req, res) => addRant(req, res, io));
+  // router.post('/', authMiddleware, (req, res) => addRant(req, res, io));
   // router.get('/getRant', (req, res) => getRants(req, res)); // Optional: make public
-  // router.post('/likes', (req, res) => addLikes(req, res, io));
-  // router.post('/comment', (req, res) => addComment(req, res, io));
+  // router.post('/likes', authMiddleware, (req, res) => addLikes(req, res, io));
+  // router.post('/comment', authMiddleware, (req, res) => addComment(req, res, io));
+
+
+  router.post('/', (req, res) => addRant(req, res, io));
+  router.get('/getRant', (req, res) => getRants(req, res)); // Optional: make public
+  router.post('/likes', (req, res) => addLikes(req, res, io));
+  router.post('/comment', (req, res) => addComment(req, res, io));
   return router;
 };
 
