@@ -47,7 +47,6 @@ export const login = async (req, res) => {
     }
 
     const likedRants = await rant.find({ likes: User._id }).select('_id');
-
     const match = await isPasswordMatch(password, User.password);
 
     if (match) {
@@ -112,11 +111,23 @@ export const getProfile = async (req, res) => {
     }
 
     const likedRants = await rant.find({ likes: foundUser._id }).select('_id');
+    const commentRants = await rant.find({ 'comments.userId': foundUser._id }).select('comments ');
+    const userComments = [];
+
+    commentRants.forEach((rantDoc)=>{
+      rantDoc.comments.forEach((comment)=>{
+        if(comment.userId.toString() === foundUser._id.toString()){
+          userComments.push(comment.userId);
+        }
+      })
+    })
+    console.log(userComments);
     res.json({
       _id: foundUser._id,
       email: foundUser.email,
       likedRants: likedRants.map((r) => r._id),
-      username: foundUser.username
+      username: foundUser.username,
+      commentedRants: userComments
     });
 
   } catch (error) {

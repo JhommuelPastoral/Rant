@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from 'react';
+import React, { useRef, useState, useEffect, useContext, use } from 'react';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -140,7 +140,6 @@ export default function Body() {
       console.error('Error posting rant:', error);
     }
   };
-
   if (loading) {
     return null;
   }
@@ -172,7 +171,6 @@ export default function Body() {
             : [...prev.likedRants, rantId], // add like
         };
       });
-  
       setRants((prevRants) => {
         return prevRants.map((rant) => {
           if (rant._id === rantId) {
@@ -231,7 +229,9 @@ export default function Body() {
         }
       )
   
-      setComments((prev) => ({ ...prev, [rantId]: '' }));
+      setComments((prev) => ({ ...prev, [rantId]  : '' }));
+      setUser((prev)=>({...prev, commentedRants: [...prev.commentedRants, user?._id]}));
+
       const el = commentEndRefs.current[rantId];
       if (el) {
         el.scrollTop = el.scrollHeight;
@@ -272,32 +272,47 @@ export default function Body() {
     }
   }
   
-
   return (
     <main className="pt-[70px] font-Poppins bg-[#f9fafb] min-h-screen px-4 pb-[50px]">
       <div className="max-w-[1400px] mx-auto flex justify-center gap-10 ">
   
         {/* Left Sticky Side */}
-        <div className="hidden xl:block sticky top-[90px]  h-fit">
-          <div className="bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl">
-            <div className="flex flex-col items-center justify-center h-full space-y-6">
-              <div className="w-20 h-20 rounded-full bg-purple-300 text-white flex items-center justify-center text-2xl font-bold mb-4">
-                <span>{user?.username.charAt(0).toUpperCase()}</span>
+        <div className="hidden xl:block sticky top-[90px] h-fit">
+          <div className="bg-white p-6 w-[300px] h-[400px] shadow-md rounded-2xl border border-gray-100">
+            <div className="flex flex-col items-center justify-start h-full space-y-6">
+              {/* Avatar */}
+              <div className="w-24 h-24 rounded-full bg-purple-400 text-white flex items-center justify-center text-3xl font-bold shadow">
+                <span>{user?.username?.charAt(0).toUpperCase()}</span>
               </div>
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">Coming Soon!</h2>
-                <p className="text-gray-600 text-sm mb-4">
-                  We are working hard to bring new features. Stay tuned for updates!
-                </p>
+
+              {/* Username */}
+              <div className="text-center w-full">
+                <h2 className="text-2xl font-semibold text-gray-800">{user?.username}</h2>
+                <p className="text-gray-500 text-sm mt-1">Member since 2025</p>
               </div>
-              <div className="flex justify-center items-center">
-                <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                  Notify Me
-                </button>
+
+              {/* Divider */}
+              <hr className="w-full border-t border-gray-200" />
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 w-full px-2">
+                <div className="text-center">
+                  <p className="text-xl font-bold text-purple-600">{user?.likedRants.length}</p>
+                  <p className="text-sm text-gray-600">Likes</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-bold text-purple-600">10</p>
+                  <p className="text-sm text-gray-600">Rants</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-bold text-purple-600">{user?.commentedRants.length}</p>
+                  <p className="text-sm text-gray-600">Comments</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
   
         {/* Main Content */}
         <div className="w-full max-w-[700px] flex flex-col gap-6">
