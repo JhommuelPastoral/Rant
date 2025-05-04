@@ -49,6 +49,16 @@ export const login = async (req, res) => {
     const likedRants = await rant.find({ likes: User._id }).select('_id');
     const match = await isPasswordMatch(password, User.password);
 
+    const commentRants = await rant.find({ 'comments.userId': User._id }).select('comments ');
+    const userComments = [];
+
+    commentRants.forEach((rantDoc)=>{
+      rantDoc.comments.forEach((comment)=>{
+        if(comment.userId.toString() === User._id.toString()){
+          userComments.push(comment.userId);
+        }
+      })
+    })
     if (match) {
       jwt.sign(
         { email: User.email, username: User.username },
@@ -65,6 +75,7 @@ export const login = async (req, res) => {
             email: User.email,
             username: User.username,
             likedRants: likedRants.map(r => r._id),
+            commentedRants:userComments
           });
         }
       );
@@ -121,7 +132,6 @@ export const getProfile = async (req, res) => {
         }
       })
     })
-    console.log(userComments);
     res.json({
       _id: foundUser._id,
       email: foundUser.email,
