@@ -430,20 +430,42 @@ export default function Body() {
   
         {/* Right Sticky Side */}
         <div className="hidden xl:block sticky top-[90px] h-fit">
-          <div className="bg-white p-6 w-[300px] h-[500px] shadow-md rounded-xl">
-            <div className="flex flex-col items-center justify-center h-full">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon!</h2>
-              <p className="text-center text-gray-600 mb-6">
-                We are working hard to bring new features. Stay tuned for updates!
-              </p>
-              <div className="flex justify-center items-center">
-                <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                  Notify Me
-                </button>
-              </div>
+          <div className="bg-white p-4 w-[300px] shadow-md rounded-xl">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Trends for you</h2>
+
+            <div className="hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition">
+              <p className="text-xs text-gray-500">Trending in Philippines</p>
+              <p className="text-sm font-semibold text-gray-800">#MayThe4th</p>
+              <p className="text-xs text-gray-500">45.3K Tweets</p>
+            </div>
+
+            <div className="hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition">
+              <p className="text-xs text-gray-500">Music · Trending</p>
+              <p className="text-sm font-semibold text-gray-800">#TaylorSwift</p>
+              <p className="text-xs text-gray-500">120K Tweets</p>
+            </div>
+
+            <div className="hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition">
+              <p className="text-xs text-gray-500">Politics · Trending</p>
+              <p className="text-sm font-semibold text-gray-800">Leni Robredo</p>
+              <p className="text-xs text-gray-500">15.2K Tweets</p>
+            </div>
+            <div className="hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition">
+              <p className="text-xs text-gray-500">Entertainment · Trending</p>
+              <p className="text-sm font-semibold text-gray-800">#KDramaFever</p>
+              <p className="text-xs text-gray-500">22.1K Tweets</p>
+            </div>
+
+            <div className="hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition">
+              <p className="text-xs text-gray-500">Sports · Trending</p>
+              <p className="text-sm font-semibold text-gray-800">#UAAPSeason87</p>
+              <p className="text-xs text-gray-500">8,400 Tweets</p>
+
             </div>
           </div>
         </div>
+
+
         {/* Chats */}
         {showChat && (
         <div className="fixed bottom-4 right-4 z-50 w-[300px] bg-white shadow-lg rounded-xl overflow-hidden text-sm">
